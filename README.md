@@ -828,25 +828,7 @@ Agregar secciones completas siguiendo el estándar de este informe de auditoría
 | H-06 | Errores en interfaz de usuario | Medio | Alta | **ALTO** |
 | H-07 | Dificultad de mantenimiento | Bajo | Baja | **BAJO** |
 
-### 8.2 Mapa de Calor de Riesgos
 
-```mermaid
-quadrantChart
-    title Mapa de Calor de Riesgos: Impacto vs Probabilidad
-    x-axis Baja Probabilidad --> Alta Probabilidad
-    y-axis Bajo Impacto --> Alto Impacto
-    quadrant-1 CRÍTICO - Acción Inmediata
-    quadrant-2 ALTO - Prioridad Alta
-    quadrant-3 MEDIO - Planificar
-    quadrant-4 BAJO - Monitorear
-    H-02 Conexión Ollama: [0.85, 0.90]
-    H-03 Persistencia BD: [0.85, 0.90]
-    H-01 JSON Parsing: [0.60, 0.85]
-    H-04 Credenciales: [0.60, 0.85]
-    H-05 Validación: [0.80, 0.65]
-    H-06 UI Errors: [0.80, 0.65]
-    H-07 Documentación: [0.25, 0.25]
-```
 
 ### 8.3 Distribución de Riesgos por Categoría
 
