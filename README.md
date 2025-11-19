@@ -1405,10 +1405,12 @@ def create_ticket():
 
 ### **Funcionalidad**
 hasta ahi llegue con el sistema , parece que hay problemas con la conexion al modelo ollama
+
 ![Funcionalidad](./backend/evidencias/e0.png)
 
 ### **Modelo**
 tenia el modelo que se necetiba
+
 ![Modelo](./backend/evidencias/e2.png)
 
 ---
@@ -1416,9 +1418,11 @@ tenia el modelo que se necetiba
 ### **Comandos**
 comandos que utilise para el levantamiento en docker
 **docker-compose down**
+
 ![compose down](./backend/evidencias/e3.png)
 
 **docker-compose up --build**
+
 ![compose build](./backend/evidencias/e4.png)
 
 ---
@@ -1426,7 +1430,9 @@ comandos que utilise para el levantamiento en docker
 ### **Docker**
 estos son los contenedores que se crearon 
 **Containers**
+
 ![Containers](./backend/evidencias/e3.png)
 
 **Images**
+
 ![Images](./backend/evidencias/e4.png)
