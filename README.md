@@ -1352,55 +1352,6 @@ gantt
     Auditoría externa               :milestone, 15/12/2025, 0d
 ```
 
-### 11.3 Matriz de Responsabilidades (RACI)
-
-| Acción | Backend | Frontend | DevOps | QA | Auditor |
-|--------|---------|----------|--------|----|---------||
-| PA-01: Debug UI | C | **R** | I | A | I |
-| PA-02: Validación | **R** | C | I | A | I |
-| PA-03: Variables .env | A | I | **R** | C | I |
-| PA-04: Credenciales | **R** | I | A | C | I |
-| PA-05: Logging | **R** | C | A | I | I |
-| PA-06: Tests | A | A | I | **R** | C |
-| PA-07: Health checks | C | I | **R** | A | I |
-| PA-08: Documentación | **R** | C | C | I | A |
-
-**Leyenda:**
-- **R** = Responsable (Responsible)
-- **A** = Aprobador (Accountable)
-- **C** = Consultado (Consulted)
-- **I** = Informado (Informed)
-
-### 11.4 Indicadores de Seguimiento (KPIs)
-
-```mermaid
-graph LR
-    A[KPIs de Seguimiento] --> B
-
-| Campo | Detalle |
-|-------|---------|
-| **Código** | H-05 |
-| **Área evaluada** | Seguridad - Validación de Datos |
-| **Objetivo relacionado** | OE3 - Auditar seguridad |
-| **Severidad** | ⚠️ **MEDIA** |
-| **Estado** | ⚠️ **PENDIENTE** |
-
-#### Descripción:
-El sistema no valida ni sanitiza las entradas de usuario antes de procesarlas, lo que abre la puerta a ataques de inyección (SQL, XSS).
-
-**Código vulnerable:**
-```python
-# app.py - línea 78
-@app.route('/tickets', methods=['POST'])
-def create_ticket():
-    titulo = request.form['titulo']  # ❌ Sin validación
-    descripcion = request.form['descripcion']
-    
-    # ❌ Vulnerable a SQL Injection
-    query = f"INSERT INTO tickets (titulo) VALUES ('{titulo}')"
-    db.execute(query)
-```
-
 ## 12. ANEXOS
 
 ### **Funcionalidad**
