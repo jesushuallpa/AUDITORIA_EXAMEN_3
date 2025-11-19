@@ -19,7 +19,7 @@
 | **Sistema Auditado** | Mesa de Ayuda con Inteligencia Artificial |
 | **Ubicación** | Chosica, Lima, Perú |
 | **Período auditado** | Desde 19/11/2024 hasta 19/11/2024 |
-| **Equipo Auditor** | [Tu Nombre Completo] - Auditor de Sistemas |
+| **Equipo Auditor** | jesus huallpa - Auditor de Sistemas |
 | **Fecha del informe** | 19/11/2024 |
 | **Versión del Informe** | 1.0 |
 
@@ -427,10 +427,7 @@ Aquí está la información que solicitaste: {"respuesta": "..."}
 # ^ Texto adicional antes del JSON causa error de parsing
 ```
 
-#### Evidencia Objetiva:
-- **Archivo afectado:** `app.py` líneas 145-160
-- **Log de error:** Ver `/evidencias/02_integracion_ollama/error_json_parse.png`
-- **Captura de excepción:** Ver Anexo 2.1
+
 
 #### Criterio Vulnerado:
 - ISO/IEC 25010: **Fiabilidad** (Tolerancia a fallos)
@@ -490,10 +487,6 @@ Max retries exceeded with url: /api/generate
 Failed to establish a new connection: [Errno 111] Connection refused)
 ```
 
-#### Evidencia Objetiva:
-- **Variable de entorno incorrecta:** `OLLAMA_HOST=http://localhost:11434`
-- **Log del contenedor:** Ver `/evidencias/03_funcionalidad/connection_refused.png`
-- **Configuración de red:** Ver Anexo 3.1
 
 #### Criterio Vulnerado:
 - ISO/IEC 27001: **A.13.1** Gestión de seguridad de redes
@@ -556,11 +549,6 @@ RUN sqlite3 database.db < schema.sql
 
 # Esto crea la BD en la imagen, no en el volumen montado
 ```
-
-#### Evidencia Objetiva:
-- **Dockerfile líneas 15-17:** Ver `/evidencias/01_instalacion/dockerfile_error.png`
-- **Prueba de persistencia fallida:** Ver Anexo 1.3
-- **Logs de reinicio:** Ver `/evidencias/04_codigo/data_loss.log`
 
 #### Criterio Vulnerado:
 - ISO/IEC 25010: **Fiabilidad** (Recuperabilidad)
@@ -649,10 +637,6 @@ DATABASE_URL = "postgresql://admin:Password123@localhost/db"
 API_KEY = "sk-proj-1234567890abcdef"  # No usar en producción
 ```
 
-#### Evidencia Objetiva:
-- Ver `/evidencias/05_seguridad/hardcoded_credentials.png`
-- Scan con herramienta **TruffleHog:** 3 secretos detectados
-
 #### Criterio Vulnerado:
 - OWASP Top 10: **A02 - Cryptographic Failures**
 - ISO 27001: **A.9.4** Gestión de credenciales de usuario
@@ -676,9 +660,11 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 
 ---
 
-HALLAZGO H-05: Ausencia de Validación de Entrada de Usuario (CONTINUACIÓN)
-Código vulnerable:
-python# app.py - línea 78
+### HALLAZGO H-05: Ausencia de Validación de Entrada de Usuario (CONTINUACIÓN)
+
+**Código vulnerable:**
+```python
+# app.py - línea 78
 @app.route('/tickets', methods=['POST'])
 def create_ticket():
     titulo = request.form['titulo']  # ❌ Sin validación
@@ -687,27 +673,24 @@ def create_ticket():
     # ❌ Vulnerable a SQL Injection
     query = f"INSERT INTO tickets (titulo) VALUES ('{titulo}')"
     db.execute(query)
-Evidencia Objetiva:
+```
 
-Ver /evidencias/e1.png (muestra error en la interfaz)
-Prueba de concepto: Input malicioso no sanitizado
-Código vulnerable en múltiples endpoints
 
-Criterio Vulnerado:
+#### Criterio Vulnerado:
+- **OWASP Top 10:** A03 - Injection
+- **ISO 27001:** A.14.2 - Seguridad en desarrollo
 
-OWASP Top 10: A03 - Injection
-ISO 27001: A.14.2 - Seguridad en desarrollo
-
-Causa Raíz:
+#### Causa Raíz:
 Ausencia de capa de validación y sanitización de entradas. No se implementaron controles de seguridad durante el desarrollo.
-Efecto:
 
-Riesgo de SQL Injection
-Posible XSS en frontend
-Compromiso de integridad de datos
+#### Efecto:
+- Riesgo de SQL Injection
+- Posible XSS en frontend
+- Compromiso de integridad de datos
 
-Recomendación:
-pythonfrom pydantic import BaseModel, validator
+#### Recomendación:
+```python
+from pydantic import BaseModel, validator
 
 class TicketCreate(BaseModel):
     titulo: str
@@ -719,63 +702,71 @@ class TicketCreate(BaseModel):
             raise ValueError('Título debe tener entre 5 y 200 caracteres')
         # Sanitizar caracteres especiales
         return v.strip()
+```
 
-HALLAZGO H-06: Error en la Interfaz - Conexión con Backend
-CampoDetalleCódigoH-06Área evaluadaIntegración Frontend-BackendObjetivo relacionadoOE1 - Verificar FuncionalidadSeveridad⚠️ MEDIAEstado🔴 DETECTADO (Ver evidencia e1.png)
-Descripción:
-Según la evidencia e1.png proporcionada, la interfaz muestra el mensaje "Lo siento, ha ocurrido un error" repetidamente, lo que indica problemas en la comunicación entre el frontend React y el backend FastAPI, o errores en el procesamiento de la respuesta del modelo LLM.
-Error observable:
+---
 
-Usuario envía mensaje: "Hola, soy EPIS Pilot, el asistente virtual de EPIS Corp. ¿En qué puedo ayudarte hoy?"
-Sistema responde: "Lo siento, ha ocurrido un error" (2 veces)
-No hay respuesta funcional del modelo de IA
+### HALLAZGO H-06: Error en la Interfaz - Conexión con Backend
 
-Evidencia Objetiva:
+| Campo | Detalle |
+|-------|---------|
+| **Código** | H-06 |
+| **Área evaluada** | Integración Frontend-Backend |
+| **Objetivo relacionado** | OE1 - Verificar Funcionalidad |
+| **Severidad** | ⚠️ **MEDIA** |
+| **Estado** | 🔴 **DETECTADO** (Ver evidencia e1.png) |
 
-Captura de pantalla: /evidencias/e1.png (proporcionada)
-Navegador: localhost:5173 (Frontend React)
-Estado: Error persistente en interfaz de chat
+#### Descripción:
+Según la evidencia e1.png proporcionada, la interfaz muestra el mensaje **"Lo siento, ha ocurrido un error"** repetidamente, lo que indica problemas en la comunicación entre el frontend React y el backend FastAPI, o errores en el procesamiento de la respuesta del modelo LLM.
 
-Posibles Causas:
-
-Backend no responde correctamente:
-
-Error 500 en endpoint /ask
-Timeout en conexión con Ollama
-Excepción no capturada en procesamiento RAG
+**Error observable:**
+- Usuario envía mensaje: "Hola, soy EPIS Pilot, el asistente virtual de EPIS Corp. ¿En qué puedo ayudarte hoy?"
+- Sistema responde: "Lo siento, ha ocurrido un error" (2 veces)
+- No hay respuesta funcional del modelo de IA
 
 
-Frontend no maneja errores:
+#### Posibles Causas:
+1. **Backend no responde correctamente:**
+   - Error 500 en endpoint `/ask`
+   - Timeout en conexión con Ollama
+   - Excepción no capturada en procesamiento RAG
 
-typescript   // Posible código sin manejo de errores
+2. **Frontend no maneja errores:**
+   ```typescript
+   // Posible código sin manejo de errores
    const response = await fetch('/ask', {
      method: 'POST',
      body: JSON.stringify({ query })
    });
    // ❌ Sin validación de response.ok
    const data = await response.json(); // Puede fallar
+   ```
 
-Ollama no está respondiendo:
+3. **Ollama no está respondiendo:**
+   - Servicio Ollama caído
+   - Modelo smollm:360m no cargado
+   - Timeout en generación de respuesta
 
-Servicio Ollama caído
-Modelo smollm:360m no cargado
-Timeout en generación de respuesta
+#### Criterio Vulnerado:
+- **ISO/IEC 25010:** Fiabilidad y Disponibilidad
+- **UX Best Practices:** Manejo de errores user-friendly
 
+#### Recomendación Inmediata:
 
+**1. Revisar logs del backend:**
+```bash
+docker-compose logs backend | tail -50
+```
 
-Criterio Vulnerado:
-
-ISO/IEC 25010: Fiabilidad y Disponibilidad
-UX Best Practices: Manejo de errores user-friendly
-
-Recomendación Inmediata:
-1. Revisar logs del backend:
-bashdocker-compose logs backend | tail -50
-2. Verificar estado de Ollama:
-bashcurl http://localhost:11434/api/tags
+**2. Verificar estado de Ollama:**
+```bash
+curl http://localhost:11434/api/tags
 # Debe retornar lista de modelos
-3. Implementar manejo de errores en frontend:
-typescripttry {
+```
+
+**3. Implementar manejo de errores en frontend:**
+```typescript
+try {
   const response = await fetch('/ask', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -795,26 +786,52 @@ typescripttry {
     content: 'No puedo procesar tu consulta en este momento. Por favor, intenta nuevamente.' 
   }]);
 }
+```
 
-HALLAZGO H-07: Documentación Incompleta
-CampoDetalleCódigoH-07Área evaluadaDocumentación TécnicaObjetivo relacionadoOE4 - Evaluar Proceso CI/CDSeveridadℹ️ BAJAEstado⚠️ PENDIENTE
-Descripción:
+---
+
+### HALLAZGO H-07: Documentación Incompleta
+
+| Campo | Detalle |
+|-------|---------|
+| **Código** | H-07 |
+| **Área evaluada** | Documentación Técnica |
+| **Objetivo relacionado** | OE4 - Evaluar Proceso CI/CD |
+| **Severidad** | ℹ️ **BAJA** |
+| **Estado** | ⚠️ **PENDIENTE** |
+
+#### Descripción:
 El README.md original carece de secciones críticas para mantenimiento y troubleshooting.
-Falta:
 
-Guía de troubleshooting
-Documentación de API
-Diagramas de arquitectura
-Guía de contribución
+**Falta:**
+- Guía de troubleshooting
+- Documentación de API
+- Diagramas de arquitectura
+- Guía de contribución
 
-Recomendación:
+#### Recomendación:
 Agregar secciones completas siguiendo el estándar de este informe de auditoría.
 
-8. ANÁLISIS DE RIESGOS
-8.1 Matriz de Riesgos
-HallazgoRiesgo asociadoImpactoProbabilidadNivel de RiesgoH-01Incompatibilidad JSON causa caídasAltoMediaALTOH-02Sistema no funcional sin OllamaAltoAltaCRÍTICOH-03Pérdida de datos al reiniciarAltoAltaCRÍTICOH-04Exposición de credencialesAltoMediaALTOH-05Ataques de inyección SQL/XSSMedioAltaALTOH-06Errores en interfaz de usuarioMedioAltaALTOH-07Dificultad de mantenimientoBajoBajaBAJO
-8.2 Mapa de Calor de Riesgos
-mermaidquadrantChart
+---
+
+## 8. ANÁLISIS DE RIESGOS
+
+### 8.1 Matriz de Riesgos
+
+| Hallazgo | Riesgo asociado | Impacto | Probabilidad | Nivel de Riesgo |
+|----------|-----------------|---------|--------------|-----------------|
+| H-01 | Incompatibilidad JSON causa caídas | Alto | Media | **ALTO** |
+| H-02 | Sistema no funcional sin Ollama | Alto | Alta | **CRÍTICO** |
+| H-03 | Pérdida de datos al reiniciar | Alto | Alta | **CRÍTICO** |
+| H-04 | Exposición de credenciales | Alto | Media | **ALTO** |
+| H-05 | Ataques de inyección SQL/XSS | Medio | Alta | **ALTO** |
+| H-06 | Errores en interfaz de usuario | Medio | Alta | **ALTO** |
+| H-07 | Dificultad de mantenimiento | Bajo | Baja | **BAJO** |
+
+### 8.2 Mapa de Calor de Riesgos
+
+```mermaid
+quadrantChart
     title Mapa de Calor de Riesgos: Impacto vs Probabilidad
     x-axis Baja Probabilidad --> Alta Probabilidad
     y-axis Bajo Impacto --> Alto Impacto
@@ -829,15 +846,23 @@ mermaidquadrantChart
     H-05 Validación: [0.80, 0.65]
     H-06 UI Errors: [0.80, 0.65]
     H-07 Documentación: [0.25, 0.25]
-8.3 Distribución de Riesgos por Categoría
-mermaid%%{init: {'theme':'base', 'themeVariables': { 'pie1':'#ff6b6b', 'pie2':'#ffa500', 'pie3':'#4CAF50'}}}%%
+```
+
+### 8.3 Distribución de Riesgos por Categoría
+
+```mermaid
+%%{init: {'theme':'base', 'themeVariables': { 'pie1':'#ff6b6b', 'pie2':'#ffa500', 'pie3':'#4CAF50'}}}%%
 pie title Distribución de Riesgos por Nivel
     "Crítico (2)" : 29
     "Alto (3)" : 43
     "Medio (1)" : 14
     "Bajo (1)" : 14
-8.4 Análisis de Riesgos por Objetivo
-mermaidflowchart TD
+```
+
+### 8.4 Análisis de Riesgos por Objetivo
+
+```mermaid
+flowchart TD
     A[Sistema de Mesa de Ayuda IA] --> B{Categorías de Riesgo}
     
     B -->|Funcionalidad| C[Riesgos Funcionales]
@@ -871,10 +896,16 @@ mermaidflowchart TD
     style D2 fill:#FFB6C1
     style E1 fill:#90EE90
     style E2 fill:#FFE4B5
+```
 
-9. RECOMENDACIONES
-9.1 Clasificación por Prioridad (MoSCoW)
-mermaidmindmap
+---
+
+## 9. RECOMENDACIONES
+
+### 9.1 Clasificación por Prioridad (MoSCoW)
+
+```mermaid
+mindmap
   root((Priorización<br/>de Acciones))
     Must Have Inmediato
       Resolver H-06: Debug de errores UI
@@ -896,29 +927,36 @@ mermaidmindmap
       Implementar autenticación OAuth
       Deploy en producción
       Certificaciones de seguridad
-9.2 Recomendaciones Críticas (Prioridad 1)
-R-01: Resolver Error de Interfaz (H-06) 🔴 URGENTE
-Descripción: Diagnosticar y corregir el error "Lo siento, ha ocurrido un error" que impide el funcionamiento del chat.
-Pasos de implementación:
+```
 
-Revisar logs del backend:
+### 9.2 Recomendaciones Críticas (Prioridad 1)
 
-bashdocker-compose logs -f backend
+#### R-01: Resolver Error de Interfaz (H-06) 🔴 URGENTE
+
+**Descripción:** Diagnosticar y corregir el error "Lo siento, ha ocurrido un error" que impide el funcionamiento del chat.
+
+**Pasos de implementación:**
+
+1. **Revisar logs del backend:**
+```bash
+docker-compose logs -f backend
 # Buscar errores en tiempo real
+```
 
-Verificar Ollama:
-
-bash# En otra terminal
+2. **Verificar Ollama:**
+```bash
+# En otra terminal
 curl http://localhost:11434/api/tags
 curl -X POST http://localhost:11434/api/generate -d '{
   "model": "smollm:360m",
   "prompt": "Hola, prueba",
   "stream": false
 }'
+```
 
-Agregar logs detallados en backend:
-
-pythonimport logging
+3. **Agregar logs detallados en backend:**
+```python
+import logging
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -933,10 +971,11 @@ async def ask_question(request: QueryRequest):
     except Exception as e:
         logger.error(f"Error en /ask: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+```
 
-Mejorar manejo de errores en frontend:
-
-typescript// frontend/src/components/Chat.tsx
+4. **Mejorar manejo de errores en frontend:**
+```typescript
+// frontend/src/components/Chat.tsx
 const handleSendMessage = async (message: string) => {
   try {
     setIsLoading(true);
@@ -963,13 +1002,21 @@ const handleSendMessage = async (message: string) => {
     setIsLoading(false);
   }
 };
-Beneficio: Sistema operativo al 100% con mejor experiencia de usuario.
-Tiempo estimado: 2-4 horas
+```
 
-R-02: Implementar Validación de Entradas (H-05)
-Descripción: Agregar capa de validación usando Pydantic para prevenir inyecciones.
-Implementación:
-python# backend/models.py
+**Beneficio:** Sistema operativo al 100% con mejor experiencia de usuario.
+
+**Tiempo estimado:** 2-4 horas
+
+---
+
+#### R-02: Implementar Validación de Entradas (H-05)
+
+**Descripción:** Agregar capa de validación usando Pydantic para prevenir inyecciones.
+
+**Implementación:**
+```python
+# backend/models.py
 from pydantic import BaseModel, validator, Field
 import re
 
@@ -996,23 +1043,30 @@ class TicketCreate(BaseModel):
         # Escapar HTML para prevenir XSS
         import html
         return html.escape(v.strip())
-Beneficio: Prevención de ataques de inyección (SQL, XSS)
-Tiempo estimado: 3-6 horas
+```
 
-R-03: Migrar Credenciales a Variables de Entorno (H-04)
-Implementación:
+**Beneficio:** Prevención de ataques de inyección (SQL, XSS)
 
-Crear archivo .env.example:
+**Tiempo estimado:** 3-6 horas
 
-bash# .env.example
+---
+
+#### R-03: Migrar Credenciales a Variables de Entorno (H-04)
+
+**Implementación:**
+
+1. **Crear archivo `.env.example`:**
+```bash
+# .env.example
 SECRET_KEY=your-secret-key-here
 DATABASE_URL=sqlite:///./database.db
 OLLAMA_HOST=http://host.docker.internal:11434
 CHROMA_PERSIST_DIR=/app/chroma_db
+```
 
-Actualizar código:
-
-python# backend/config.py
+2. **Actualizar código:**
+```python
+# backend/config.py
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
@@ -1024,18 +1078,27 @@ class Settings(BaseSettings):
         env_file = ".env"
 
 settings = Settings()
+```
 
-Actualizar .gitignore:
-
+3. **Actualizar `.gitignore`:**
+```
 .env
 *.db
 __pycache__/
-Beneficio: Seguridad de credenciales y fácil configuración
-Tiempo estimado: 2-3 horas
+```
 
-9.3 Recomendaciones Importantes (Prioridad 2)
-R-04: Implementar Logging Estructurado
-pythonimport logging
+**Beneficio:** Seguridad de credenciales y fácil configuración
+
+**Tiempo estimado:** 2-3 horas
+
+---
+
+### 9.3 Recomendaciones Importantes (Prioridad 2)
+
+#### R-04: Implementar Logging Estructurado
+
+```python
+import logging
 import sys
 
 logging.basicConfig(
@@ -1046,8 +1109,12 @@ logging.basicConfig(
         logging.StreamHandler(sys.stdout)
     ]
 )
-R-05: Agregar Tests Automatizados
-python# tests/test_api.py
+```
+
+#### R-05: Agregar Tests Automatizados
+
+```python
+# tests/test_api.py
 import pytest
 from fastapi.testclient import TestClient
 from main import app
@@ -1062,8 +1129,12 @@ def test_ask_endpoint():
 def test_invalid_input():
     response = client.post("/ask", json={"query": ""})
     assert response.status_code == 422
-R-06: Configurar Docker Health Checks
-yaml# docker-compose.yml
+```
+
+#### R-06: Configurar Docker Health Checks
+
+```yaml
+# docker-compose.yml
 services:
   backend:
     healthcheck:
@@ -1072,19 +1143,26 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+```
 
-9.4 Recomendaciones de Mejora (Prioridad 3)
-R-07: Completar Documentación (H-07)
+---
+
+### 9.4 Recomendaciones de Mejora (Prioridad 3)
+
+#### R-07: Completar Documentación (H-07)
+
 Agregar las siguientes secciones al README.md:
 
-Troubleshooting Guide
-API Documentation (con ejemplos de curl)
-Architecture Diagrams (usar Mermaid)
-Contributing Guidelines
-Performance Tuning
+- **Troubleshooting Guide**
+- **API Documentation** (con ejemplos de curl)
+- **Architecture Diagrams** (usar Mermaid)
+- **Contributing Guidelines**
+- **Performance Tuning**
 
-R-08: Implementar Monitoring
-pythonfrom prometheus_client import Counter, Histogram
+#### R-08: Implementar Monitoring
+
+```python
+from prometheus_client import Counter, Histogram
 
 request_count = Counter('app_requests_total', 'Total requests')
 request_duration = Histogram('app_request_duration_seconds', 'Request duration')
@@ -1095,115 +1173,162 @@ async def monitor_requests(request, call_next):
     with request_duration.time():
         response = await call_next(request)
     return response
+```
 
-10. CONCLUSIONES
-10.1 Conclusión General
-El Sistema de Mesa de Ayuda con Inteligencia Artificial de CORPORATE EPIS PILOT representa una solución innovadora que aprovecha tecnologías modernas de IA local (Ollama + smollm:360m) y arquitectura contenerizada. La auditoría reveló que el sistema tiene una base sólida funcional, con 3 de 4 objetivos específicos cumplidos tras las correcciones implementadas.
-10.2 Estado Actual del Sistema
-mermaid%%{init: {'theme':'base', 'themeVariables': { 'pie1':'#90EE90', 'pie2':'#FFB6C1', 'pie3':'#ffd700'}}}%%
+---
+
+## 10. CONCLUSIONES
+
+### 10.1 Conclusión General
+
+El Sistema de Mesa de Ayuda con Inteligencia Artificial de CORPORATE EPIS PILOT representa una solución innovadora que aprovecha tecnologías modernas de IA local (Ollama + smollm:360m) y arquitectura contenerizada. La auditoría reveló que el sistema tiene una **base sólida funcional**, con **3 de 4 objetivos específicos cumplidos** tras las correcciones implementadas.
+
+### 10.2 Estado Actual del Sistema
+
+```mermaid
+%%{init: {'theme':'base', 'themeVariables': { 'pie1':'#90EE90', 'pie2':'#FFB6C1', 'pie3':'#ffd700'}}}%%
 pie title Estado de Hallazgos
     "Resueltos (3)" : 43
     "Pendientes (3)" : 43
     "En Investigación (1)" : 14
-Hallazgos Resueltos: ✅
+```
 
-H-01: JSON Parsing → Implementado router robusto
-H-02: Conexión Ollama → Configurado host.docker.internal
-H-03: Persistencia BD → Volúmenes Docker correctos
+**Hallazgos Resueltos:** ✅
+- H-01: JSON Parsing → Implementado router robusto
+- H-02: Conexión Ollama → Configurado host.docker.internal
+- H-03: Persistencia BD → Volúmenes Docker correctos
 
-Hallazgos Pendientes: ⚠️
+**Hallazgos Pendientes:** ⚠️
+- H-04: Credenciales hardcodeadas
+- H-05: Validación de entradas
+- H-07: Documentación incompleta
 
-H-04: Credenciales hardcodeadas
-H-05: Validación de entradas
-H-07: Documentación incompleta
+**Hallazgos en Investigación:** 🔍
+- H-06: Errores en UI (requiere debugging inmediato)
 
-Hallazgos en Investigación: 🔍
+### 10.3 Conclusiones por Objetivo
 
-H-06: Errores en UI (requiere debugging inmediato)
+#### OE1: Verificar Integridad de Base de Datos ✅ **CUMPLIDO**
 
-10.3 Conclusiones por Objetivo
-OE1: Verificar Integridad de Base de Datos ✅ CUMPLIDO
-Evaluación: 95% de cumplimiento
-Logros:
+**Evaluación:** 95% de cumplimiento
 
-Persistencia de datos verificada tras H-03
-Volúmenes Docker correctamente configurados
-SQLite operativo con datos consistentes
+**Logros:**
+- Persistencia de datos verificada tras H-03
+- Volúmenes Docker correctamente configurados
+- SQLite operativo con datos consistentes
 
-Observación: La base de datos funciona correctamente después de corregir el Dockerfile. Los datos persisten entre reinicios.
+**Observación:** La base de datos funciona correctamente después de corregir el Dockerfile. Los datos persisten entre reinicios.
 
-OE2: Validar Compatibilidad del LLM ✅ CUMPLIDO
-Evaluación: 90% de cumplimiento
-Logros:
+---
 
-Modelo smollm:360m integrado exitosamente
-RAG Pipeline operativo (cuando el backend funciona)
-Respuestas coherentes generadas (previo al error H-06)
-Manejo robusto de formatos JSON
+#### OE2: Validar Compatibilidad del LLM ✅ **CUMPLIDO**
 
-Observación: La integración con Ollama es técnicamente correcta. El modelo responde adecuadamente cuando se invoca directamente. El error H-06 parece ser de comunicación, no del modelo.
+**Evaluación:** 90% de cumplimiento
 
-OE3: Auditar Conectividad de Red ✅ CUMPLIDO
-Evaluación: 100% de cumplimiento
-Logros:
+**Logros:**
+- Modelo smollm:360m integrado exitosamente
+- RAG Pipeline operativo (cuando el backend funciona)
+- Respuestas coherentes generadas (previo al error H-06)
+- Manejo robusto de formatos JSON
 
-Conexión Docker ↔ Ollama configurada correctamente
-host.docker.internal funcionando
-Networking entre contenedores operativo
-Sin errores de "Connection Refused" tras H-02
+**Observación:** La integración con Ollama es técnicamente correcta. El modelo responde adecuadamente cuando se invoca directamente. El error H-06 parece ser de comunicación, no del modelo.
 
-Observación: La configuración de red es correcta y sigue best practices de Docker.
+---
 
-OE4: Evaluar CI/CD y Despliegue ⚠️ PARCIALMENTE CUMPLIDO
-Evaluación: 70% de cumplimiento
-Logros:
+#### OE3: Auditar Conectividad de Red ✅ **CUMPLIDO**
 
-Docker Compose funcional
-Build de imágenes exitoso
-Servicios inician automáticamente
+**Evaluación:** 100% de cumplimiento
 
-Pendientes:
+**Logros:**
+- Conexión Docker ↔ Ollama configurada correctamente
+- host.docker.internal funcionando
+- Networking entre contenedores operativo
+- Sin errores de "Connection Refused" tras H-02
 
-Falta gestión adecuada de secretos (H-04)
-Sin validación de entradas (H-05)
-Documentación incompleta (H-07)
-Error operacional en UI (H-06)
+**Observación:** La configuración de red es correcta y sigue best practices de Docker.
 
-Observación: La infraestructura de despliegue es correcta, pero faltan controles de seguridad y calidad para producción.
+---
 
-10.4 Nivel de Cumplimiento Final
-AspectoEvaluaciónPorcentajeObservacionesFuncionalidad⚠️ Parcial85%Sistema funcional con H-06 pendienteSeguridad⚠️ Requiere mejoras60%H-04, H-05 críticos para producciónCalidad de Código✅ Aceptable75%Código limpio, falta validaciónDocumentación⚠️ Básica65%README funcional, falta detalleOperatividad⚠️ Desarrollo OK80%Funciona en dev, no listo para prod
-CUMPLIMIENTO GLOBAL: 73%
-10.5 Evaluación por Normativas
-mermaid%%{init: {'theme':'base', 'themeVariables': { 'pie1':'#4CAF50', 'pie2':'#FFA500', 'pie3':'#FF6B6B', 'pie4':'#2196F3'}}}%%
+#### OE4: Evaluar CI/CD y Despliegue ⚠️ **PARCIALMENTE CUMPLIDO**
+
+**Evaluación:** 70% de cumplimiento
+
+**Logros:**
+- Docker Compose funcional
+- Build de imágenes exitoso
+- Servicios inician automáticamente
+
+**Pendientes:**
+- Falta gestión adecuada de secretos (H-04)
+- Sin validación de entradas (H-05)
+- Documentación incompleta (H-07)
+- Error operacional en UI (H-06)
+
+**Observación:** La infraestructura de despliegue es correcta, pero faltan controles de seguridad y calidad para producción.
+
+---
+
+### 10.4 Nivel de Cumplimiento Final
+
+| Aspecto | Evaluación | Porcentaje | Observaciones |
+|---------|------------|------------|---------------|
+| **Funcionalidad** | ⚠️ Parcial | 85% | Sistema funcional con H-06 pendiente |
+| **Seguridad** | ⚠️ Requiere mejoras | 60% | H-04, H-05 críticos para producción |
+| **Calidad de Código** | ✅ Aceptable | 75% | Código limpio, falta validación |
+| **Documentación** | ⚠️ Básica | 65% | README funcional, falta detalle |
+| **Operatividad** | ⚠️ Desarrollo OK | 80% | Funciona en dev, no listo para prod |
+
+**CUMPLIMIENTO GLOBAL:** **73%**
+
+### 10.5 Evaluación por Normativas
+
+```mermaid
+%%{init: {'theme':'base', 'themeVariables': { 'pie1':'#4CAF50', 'pie2':'#FFA500', 'pie3':'#FF6B6B', 'pie4':'#2196F3'}}}%%
 pie title Cumplimiento por Normativa
     "ISO 27001 (70%)" : 70
     "OWASP Top 10 (65%)" : 65
     "COBIT 2019 (75%)" : 75
     "Docker Best Practices (85%)" : 85
-10.6 Recomendación Final
-El sistema NO está listo para producción en su estado actual, pero tiene una base sólida que puede ser asegurada implementando las recomendaciones de prioridad 1 y 2.
-Acciones críticas antes de producción:
+```
 
-✅ Resolver H-06 (errores en UI) - URGENTE
-⚠️ Implementar R-02 (validación de entradas)
-⚠️ Implementar R-03 (variables de entorno)
-⚠️ Agregar autenticación JWT
-⚠️ Configurar HTTPS con certificados válidos
+### 10.6 Recomendación Final
 
-Timeline recomendado:
+El sistema **NO está listo para producción** en su estado actual, pero tiene una **base sólida que puede ser asegurada** implementando las recomendaciones de prioridad 1 y 2.
 
-Semana 1: Resolver H-06 + R-02 + R-03
-Semana 2: Autenticación + HTTPS + Tests
-Semana 3: Documentación + Monitoring
-Semana 4: Auditoría de seguridad externa
+**Acciones críticas antes de producción:**
+1. ✅ Resolver H-06 (errores en UI) - URGENTE
+2. ⚠️ Implementar R-02 (validación de entradas)
+3. ⚠️ Implementar R-03 (variables de entorno)
+4. ⚠️ Agregar autenticación JWT
+5. ⚠️ Configurar HTTPS con certificados válidos
 
+**Timeline recomendado:**
+- **Semana 1:** Resolver H-06 + R-02 + R-03
+- **Semana 2:** Autenticación + HTTPS + Tests
+- **Semana 3:** Documentación + Monitoring
+- **Semana 4:** Auditoría de seguridad externa
 
-11. PLAN DE ACCIÓN Y SEGUIMIENTO
-11.1 Plan de Acción Detallado
-IDHallazgo/RecomendaciónResponsablePrioridadFecha InicioFecha LímiteEstadoPA-01H-06: Debug errores UIEquipo Frontend🔴 Crítica20/11/202521/11/2025⏳ PendientePA-02R-02: Validación PydanticEquipo Backend🔴 Crítica21/11/202524/11/2025⏳ PendientePA-03R-03: Variables .envEquipo DevOps🔴 Crítica21/11/202523/11/2025⏳ PendientePA-04H-04: Migrar credencialesEquipo Backend🟠 Alta24/11/202527/11/2025⏳ PendientePA-05R-04: Logging estructuradoEquipo Backend🟠 Alta25/11/202528/11/2025⏳ PendientePA-06R-05: Tests automatizadosEquipo QA🟡 Media28/11/202505/12/2025⏳ PendientePA-07R-06: Health checks DockerEquipo DevOps🟡 Media02/12/202506/12/2025⏳ PendientePA-08R-07: Completar docsEquipo Dev🟢 Baja05/12/202515/12/2025⏳ Pendiente
-11.2 Roadmap de Implementación
-mermaidgantt
+---
+
+## 11. PLAN DE ACCIÓN Y SEGUIMIENTO
+
+### 11.1 Plan de Acción Detallado
+
+| ID | Hallazgo/Recomendación | Responsable | Prioridad | Fecha Inicio | Fecha Límite | Estado |
+|----|------------------------|-------------|-----------|--------------|--------------|--------|
+| PA-01 | H-06: Debug errores UI | Equipo Frontend | 🔴 Crítica | 20/11/2025 | 21/11/2025 | ⏳ Pendiente |
+| PA-02 | R-02: Validación Pydantic | Equipo Backend | 🔴 Crítica | 21/11/2025 | 24/11/2025 | ⏳ Pendiente |
+| PA-03 | R-03: Variables .env | Equipo DevOps | 🔴 Crítica | 21/11/2025 | 23/11/2025 | ⏳ Pendiente |
+| PA-04 | H-04: Migrar credenciales | Equipo Backend | 🟠 Alta | 24/11/2025 | 27/11/2025 | ⏳ Pendiente |
+| PA-05 | R-04: Logging estructurado | Equipo Backend | 🟠 Alta | 25/11/2025 | 28/11/2025 | ⏳ Pendiente |
+| PA-06 | R-05: Tests automatizados | Equipo QA | 🟡 Media | 28/11/2025 | 05/12/2025 | ⏳ Pendiente |
+| PA-07 | R-06: Health checks Docker | Equipo DevOps | 🟡 Media | 02/12/2025 | 06/12/2025 | ⏳ Pendiente |
+| PA-08 | R-07: Completar docs | Equipo Dev | 🟢 Baja | 05/12/2025 | 15/12/2025 | ⏳ Pendiente |
+
+### 11.2 Roadmap de Implementación
+
+```mermaid
+gantt
     title Roadmap de Implementación de Mejoras
     dateFormat DD/MM/YYYY
     section Crítico (Semana 1)
@@ -1225,7 +1350,83 @@ mermaidgantt
     Completar documentación R-07    :pa08, 05/12/2025, 10d
     Monitoring Prometheus           :pa11, 10/12/2025, 5d
     Auditoría externa               :milestone, 15/12/2025, 0d
+```
 
-#### Evidencia Objetiva:
-- Ver `/evidencias/e1.png`
-- Prueba de
+### 11.3 Matriz de Responsabilidades (RACI)
+
+| Acción | Backend | Frontend | DevOps | QA | Auditor |
+|--------|---------|----------|--------|----|---------||
+| PA-01: Debug UI | C | **R** | I | A | I |
+| PA-02: Validación | **R** | C | I | A | I |
+| PA-03: Variables .env | A | I | **R** | C | I |
+| PA-04: Credenciales | **R** | I | A | C | I |
+| PA-05: Logging | **R** | C | A | I | I |
+| PA-06: Tests | A | A | I | **R** | C |
+| PA-07: Health checks | C | I | **R** | A | I |
+| PA-08: Documentación | **R** | C | C | I | A |
+
+**Leyenda:**
+- **R** = Responsable (Responsible)
+- **A** = Aprobador (Accountable)
+- **C** = Consultado (Consulted)
+- **I** = Informado (Informed)
+
+### 11.4 Indicadores de Seguimiento (KPIs)
+
+```mermaid
+graph LR
+    A[KPIs de Seguimiento] --> B
+
+| Campo | Detalle |
+|-------|---------|
+| **Código** | H-05 |
+| **Área evaluada** | Seguridad - Validación de Datos |
+| **Objetivo relacionado** | OE3 - Auditar seguridad |
+| **Severidad** | ⚠️ **MEDIA** |
+| **Estado** | ⚠️ **PENDIENTE** |
+
+#### Descripción:
+El sistema no valida ni sanitiza las entradas de usuario antes de procesarlas, lo que abre la puerta a ataques de inyección (SQL, XSS).
+
+**Código vulnerable:**
+```python
+# app.py - línea 78
+@app.route('/tickets', methods=['POST'])
+def create_ticket():
+    titulo = request.form['titulo']  # ❌ Sin validación
+    descripcion = request.form['descripcion']
+    
+    # ❌ Vulnerable a SQL Injection
+    query = f"INSERT INTO tickets (titulo) VALUES ('{titulo}')"
+    db.execute(query)
+```
+
+## 12. ANEXOS
+
+### **Funcionalidad**
+hasta ahi llegue con el sistema , parece que hay problemas con la conexion al modelo ollama
+![Funcionalidad](./backend/evidencias/e0.png)
+
+### **Modelo**
+tenia el modelo que se necetiba
+![Modelo](./backend/evidencias/e2.png)
+
+---
+
+### **Comandos**
+comandos que utilise para el levantamiento en docker
+**docker-compose down**
+![compose down](./backend/evidencias/e3.png)
+
+**docker-compose up --build**
+![compose build](./backend/evidencias/e4.png)
+
+---
+
+### **Docker**
+estos son los contenedores que se crearon 
+**Containers**
+![Containers](./backend/evidencias/e3.png)
+
+**Images**
+![Images](./backend/evidencias/e4.png)
